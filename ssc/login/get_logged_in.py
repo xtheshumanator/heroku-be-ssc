@@ -1,16 +1,15 @@
 import psycopg2
 # from ssc.dbconfig import user, password, database
 from passlib.hash import pbkdf2_sha256
-from ssc.dbconnection import connection, cursor
+from ssc.dbconnection import getDBConnection
 
 def fetch_user_details(username, password):
     res = {}
     password_ok = False
     # connection = None
     try:
-        # connection = psycopg2.connect(
-        #     database=database)
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
         cursor.execute("SELECT password FROM users WHERE username = %s;", (username,))
         encrypted_pw = cursor.fetchone()[0]
         count = cursor.rowcount

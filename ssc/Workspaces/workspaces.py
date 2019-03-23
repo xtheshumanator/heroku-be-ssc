@@ -10,7 +10,7 @@ import boto3
 
 from ssc.Utils.db_ops import get_workspace_id, get_user_id, is_user_admin
 # from ssc.dbconfig import user, password, database
-from ssc.dbconnection import connection, cursor
+from ssc.dbconnection import getDBConnection
 
 
 def delete_workspace(delete_request):
@@ -30,11 +30,8 @@ def delete_workspace(delete_request):
         if (workspace_id == -1 | deleted_by_id == -1):
             res['error'] = 'Could not locate workspace or user deleting the workspace'
         else:
-            # connection = psycopg2.connect(
-            #     user=user,
-            #     password=password,
-            #     database=database)
-            # cursor = connection.cursor()
+            connection = getDBConnection()
+            cursor = connection.cursor()
 
             loop = asyncio.new_event_loop()
             admin_status = loop.run_until_complete(is_user_admin(deleted_by_id, workspace_id))
@@ -53,7 +50,7 @@ def delete_workspace(delete_request):
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
 
-        res['error'] = error
+        res['error'] = str(error)
 
 
     finally:
@@ -91,11 +88,8 @@ def update_admin(workspace, admin_request):
         if (workspace_id == -1 | admin_id == -1 | user_id == -1):
             res['error'] = 'Invalid input. Check username, admin and workspace are correct'
         else:
-            # connection = psycopg2.connect(
-            #     user=user,
-            #     password=password,
-            #     database=database)
-            # cursor = connection.cursor()
+            connection = getDBConnection()
+            cursor = connection.cursor()
 
             loop = asyncio.new_event_loop()
             admin_status = loop.run_until_complete(is_user_admin(admin_id, workspace_id))
@@ -160,10 +154,8 @@ def create_workspace_only(data):
 
             res['error'] = 'Could not find user in the system so cannot add workspace for user'
         else:
-            # connection = psycopg2.connect(
-            #     user=user,
-            #     password=password,
-            #     database=database)
+            connection = getDBConnection()
+            cursor = connection.cursor()
 
             insert_workspace_name = "insert into workspaces (name) values (%s) returning workspace_id"
 
@@ -186,7 +178,7 @@ def create_workspace_only(data):
 
     except (Exception, psycopg2.Error) as error:
         print('Error while conecting to PostgresQL', error)
-        res['error'] = error
+        res['error'] = str(error)
     finally:
 
         if (connection):
@@ -210,10 +202,8 @@ def create_workspace_with_users(data):
     # connection = None
 
     try:
-        # connection = psycopg2.connect(
-        #     database=database)
-        #
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
 
         insert_workspace_sql = "insert into workspaces (name) values (%s) " \
                                "returning workspace_id"
@@ -260,12 +250,8 @@ def create_workspace_with_users(data):
 
 def add_user_to_workspace(list_of_ids, workspace_id, is_admin=False):
     try:
-        # connection = psycopg2.connect(
-        #     user=user,
-        #     password=password,
-        #     database=database)
-
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
         insert_user_to_workspace_sql = "insert into workspace_users (user_id, workspace_id, is_admin) " \
                                        "values (%s,%s,%s) returning user_id"
 
@@ -302,12 +288,8 @@ def delete_user_from_workspace(data):
         admin_username = data['admin_username']
         workspace_name = data['workspace_name']
 
-        # connection = psycopg2.connect(
-        #     user=user,
-        #     password=password,
-        #     database=database)
-        #
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
         select_user = "select user_id from users where username = (%s)"
         cursor.execute(select_user, [username])
         user_id = cursor.fetchone()
@@ -369,14 +351,13 @@ def encrypt_file(f, bucket_name):
     #how to get the bucket_name
 
     try:
-#convert key from 56 into 64
+        #convert key from 56 into 64
         key = 'rfCFW5NYIJq5qWBLW_bXwHeg4z0PwVM9MDssLtQ-T4o='
         print(key)
 
-        # connection = psycopg2.connect(
-        #     database='ssc'
-        # )
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
+
         actualFile = secure_filename(f.filename)
         time_stamp = str(time.time())
         file_start = str(secure_filename(f.filename))[0:-4]
@@ -424,10 +405,9 @@ def decrypt_file(data):
         key = 'rfCFW5NYIJq5qWBLW_bXwHeg4z0PwVM9MDssLtQ-T4o='
         print(key)
 
-        # connection = psycopg2.connect(
-        #     database='ssc'
-        # )
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
+
         # filename = secure_filename(f.filename)
 
         with open('S3/' + filename, 'rb') as f:
@@ -465,10 +445,9 @@ def fetch_workspace_files(name):
     # connection = None
 
     try:
-        # connection = psycopg2.connect(
-        #     database="ssc")
-        #
-        # cursor = connection.cursor()
+        connection = getDBConnection()
+        cursor = connection.cursor()
+
         if (name == None):
             res["error"] = "Workspace name is invalid"
         else:
@@ -490,7 +469,7 @@ def fetch_workspace_files(name):
 
     except (Exception, psycopg2.Error) as error:
         print("Error while connecting to PostgreSQL", error)
-        res["error"] = error
+        res["error"] = str(error)
     finally:
         # closing database connection.
         if (connection):

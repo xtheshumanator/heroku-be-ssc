@@ -1,10 +1,13 @@
 import psycopg2
-from ssc.dbconnection import connection, cursor
+from ssc.dbconnection import getDBConnection
 from requests_toolbelt.multipart import decoder
 
 
 def add_audio_key(audio_key, session_id):
     try:
+
+        connection = getDBConnection()
+        cursor = connection.cursor()
 
         add_audio_key_sql = "INSERT INTO audio_keys (audio_key, session_id)" \
                             "VALUES (%s, %s)"
@@ -23,4 +26,4 @@ def add_audio_key(audio_key, session_id):
             connection.close()
             print("PostgreSQL connection is closed")
 
-    return 'Key Added Successfully'
+        return 'Key Added Successfully'
