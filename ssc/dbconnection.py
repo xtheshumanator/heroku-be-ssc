@@ -47,7 +47,7 @@ def getAsyncConn():
         host = url.hostname
         port = url.port
 
-        dsn = "dbname="+dbname+" user="+user+" password="+password+" host="+host+" port="+port
+        dsn = "dbname="+dbname+" user="+user+" password="+password+" host="+host+" port="+str(port)
         return dsn
     else:
         return 'dbname=ssc'
