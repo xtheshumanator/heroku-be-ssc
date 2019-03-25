@@ -1,7 +1,7 @@
 import os
 from io import BytesIO
 from flask import Flask, jsonify, request, abort
-from flask_cors import CORS
+from flask_cors import CORS, cross_origin
 # from ssc.audio_analysis.acr_api_requests import identify_audio, upload_audio
 from ssc.Invites.invites import fetch_user_invites, process_invite, insert_user_invite
 from ssc.Workspaces.workspaces import *
@@ -13,6 +13,7 @@ CORS(app)
 
 
 @app.route("/")
+@cross_origin()
 def homeDummy():
     return 'Hello'
 
@@ -27,7 +28,8 @@ def homeDummy():
 #     return decrypt_file(request.json)
 
 
-@app.route('/api/login', methods=['GET'])
+@app.route('/api/login', methods=['POST'])
+@cross_origin()
 def login():
     username = request.json['username']
     password = request.json['password']
@@ -41,6 +43,7 @@ def login():
 
 
 @app.route("/api/users")
+@cross_origin()
 def get_users():
     res = fetch_users()
     res_json = jsonify(res)
@@ -52,6 +55,7 @@ def get_users():
 
 
 @app.route("/api/users", methods = ['POST'])
+@cross_origin()
 def post_user():
     username = request.json['username']
     password = request.json['password']
@@ -64,6 +68,7 @@ def post_user():
 
 
 @app.route('/api/users/<username>', methods = ["GET"])
+@cross_origin()
 def get_user_workspaces(username):
     res = fetch_user_workspaces(username)
     res_json = jsonify(res)
@@ -75,6 +80,7 @@ def get_user_workspaces(username):
 
 
 @app.route("/api/deleteUser", methods=['DELETE'])
+@cross_origin()
 def delete_user():
     if (not request.json) | ('username' not in request.json) | ('admin_username' not in request.json) | (
             'workspace_name' not in request.json):
@@ -89,6 +95,7 @@ def delete_user():
 
 
 @app.route("/api/invites", methods=["POST"])
+@cross_origin()
 def invite_user():
     if (not request.json) | ('username' not in request.json) \
             | ('workspace' not in request.json) | ('invitedBy' not in request.json):
@@ -104,6 +111,7 @@ def invite_user():
 
 
 @app.route("/api/invites/<username>", methods = ["GET"])
+@cross_origin()
 def get_user_invites(username):
     res = fetch_user_invites(username)
     res_json = jsonify(res)
@@ -114,6 +122,7 @@ def get_user_invites(username):
 
 
 @app.route("/api/invites/<username>", methods=["POST"])
+@cross_origin()
 def update_invite(username):
     if (not request.json) | ('accept' not in request.json) | ('workspace' not in request.json):
         abort(400)
@@ -127,7 +136,7 @@ def update_invite(username):
 
 
 @app.route('/api/workspaces', methods=['POST'])
-
+@cross_origin()
 def handle_create_workspace():
     if (not request.json) | ('name' not in request.json) | ('admin' not in request.json):
         abort(400)
@@ -146,6 +155,7 @@ def handle_create_workspace():
 
 
 @app.route("/api/workspaces", methods = ["DELETE"])
+@cross_origin()
 def handle_delete_workspace():
     if (not request.json) | ('workspace' not in request.json) | ('deleted_by' not in request.json):
         abort(400)
@@ -158,7 +168,8 @@ def handle_delete_workspace():
         return res_json, 204
 
 
-@app.route("/api/workspaces/<name>", methods = ["GET"])
+@app.route("/api/workspaces/<name>/files", methods=["GET"])
+@cross_origin()
 def get_workspace_file(name):
     res = fetch_workspace_files(name)
     res_json = jsonify(res);
@@ -167,8 +178,20 @@ def get_workspace_file(name):
     else:
         return res_json, 200
 
+@app.route("/api/workspaces/<name>/users", methods=["GET"])
+@cross_origin()
+def get_workspace_users(name):
+    res = fetch_workspace_users(name)
+    res_json = jsonify(res);
+    if ("error" in res):
+        return res_json, 404
+    else:
+        return res_json, 200
+
+
 
 @app.route("/api/workspaces/<workspace_name>", methods=["PUT"])
+@cross_origin()
 def handle_update_workspace(workspace_name):
     if (not request.json) | ('username' not in request.json) \
             | ('admin_username' not in request.json) | ('make_admin' not in request.json):
@@ -189,6 +212,7 @@ def handle_update_workspace(workspace_name):
 
 
 # @app.route("/api/audiokey", methods = ["POST"])
+# @cross_origin()
 # def post_audio_key():
 #     if (not request.files) | ("session_id" not in request.values) | ("filename" not in request.values):
 #         abort(400)
