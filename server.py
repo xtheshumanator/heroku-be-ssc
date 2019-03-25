@@ -9,7 +9,8 @@ from ssc.Users.users import fetch_users, add_user, fetch_user_workspaces
 from ssc.audiokey_api.audiokey import add_audio_key
 from ssc.login.get_logged_in import fetch_user_details
 app = Flask(__name__, template_folder = 'testflask/templates')
-CORS(app)
+cors = CORS(app)
+app.config['CORS_HEADERS'] = 'Content-Type'
 
 
 @app.route("/")
